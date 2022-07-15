@@ -2,16 +2,18 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BaseCharacter : MonoBehaviour , IControllable
+public class BaseCharacter : MonoBehaviour, IControllable
 {
     InputController inputScr;
     CharacterController control;
-    [HideInInspector] public  Animator anim;
+    [HideInInspector] public Animator anim;
 
     public float time2Attack;
     [HideInInspector] public float currentTime;
+
     [HideInInspector] public bool mayAttack = false;
     [SerializeField] int comboStep = 0;
+
     [SerializeField] float comboResetTime;
     float currentComboTime;
 
@@ -24,19 +26,23 @@ public class BaseCharacter : MonoBehaviour , IControllable
 
     public void Attack()
     {
-        currentTime -= Time.deltaTime;
 
         anim.SetInteger("ComboStep", comboStep);
         if (Input.GetKeyDown(KeyCode.Mouse0) && !mayAttack)
         {
             comboStep++;
-            currentTime = time2Attack;
+            StartCoroutine("ComboStart");
+            //currentTime = time2Attack;
+            currentComboTime = comboResetTime;
+
             mayAttack = true;
         }
-        if(currentTime < 0)
+
+        if (comboStep >= 4)
         {
-            mayAttack = false;
+            ResetCombo();
         }
+
         if (currentComboTime < 0)
         {
             ResetCombo();
@@ -45,7 +51,11 @@ public class BaseCharacter : MonoBehaviour , IControllable
 
     IEnumerator ComboStart()
     {
-        yield return new WaitForSeconds(currentComboTime);
+        anim.Play("Combo" + comboStep);
+        Debug.Log("start");
+        yield return new WaitForSeconds(time2Attack);
+        Debug.Log("end");
+        mayAttack = false;
     }
 
     void ResetCombo()
